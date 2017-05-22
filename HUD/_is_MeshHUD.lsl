@@ -1,4 +1,4 @@
-// [BMS] Mesh Body Hud Script
+﻿// [BMS] Mesh Body Hud Script
 // Writtten by いっちゃん (ishikawasou)
 //
 // Version 0.9.0  ---   2017.05.21 (Beta)
@@ -11,7 +11,7 @@ integer ch_randaddval = 1;
 integer listener = 0;
 integer hud_channel = 0;
 integer body_channel = 0;
-string channel_name = "[BMS] BMSG_Body_take16";
+string channel_name = "";//"[BMS] BMSG_Body_take16";
 
 integer rot_flag = FALSE;
 integer cntr_flag = FALSE;
@@ -64,9 +64,9 @@ waiting_message()
 
 // ノートカード読み込み処理
 config_init()
-{
+{ 
     tag_key = "";
-
+    
     /*------------------------*/
     /* ButtonSettings 読み込み */
     key nc_key_1 = llGetInventoryKey(notecard_setting_name);
@@ -96,14 +96,14 @@ config_init()
 integer check_buttons_tag(string str)
 {
     integer ret = FALSE;
-
+    
     integer s_idx = llSubStringIndex(str,"<");
     integer e_idx = llSubStringIndex(str,">");
     if(s_idx != -1 && e_idx != -1)
     {
         ret = TRUE;
     }
-
+    
     return ret;
 }
 
@@ -116,7 +116,7 @@ string check_hudbody(integer link, integer face)
     {
         ret_str = llList2String(hud_body_parts_list, idx-1);
     }
-
+    
     return ret_str;
 }
 
@@ -129,13 +129,13 @@ string strReplace(string str, string search, string replace)
 string getButtonTag(integer link, integer face)
 {
     string tag_str = "";
-
+    
     integer i = 0;
-
+    
     for(i = 0 ; i < llGetListLength(hud_buttons_list); i++)
     {
         list info = llParseString2List(llList2String(hud_buttons_list,i), ["-"], [""]);
-
+    
         if(llList2String(info,0) == ((string)link + "," + (string)face))
         {
             tag_str = llList2String(info,1);
@@ -144,9 +144,9 @@ string getButtonTag(integer link, integer face)
         }
         info = [];
     }
-
+    
     @loop_out;
-
+    
     return tag_str;
 }
 
@@ -157,13 +157,13 @@ hud_body_enable_fromlist(list parts_list, integer flag)
     {
         string parts = llList2String(parts_list, i);
         integer idx = llListFindList(hud_body_parts_list, [parts]);
-
+        
         if(idx != -1)
-        {
+        {    
             list pos = llParseString2List(llList2String(hud_body_parts_list,idx+1), [","],[""]);
             integer link = llList2Integer(pos,0);
             integer face = llList2Integer(pos,1);
-
+            
             if(link != -1)
             {
                 if(flag == TRUE)
@@ -177,7 +177,7 @@ hud_body_enable_fromlist(list parts_list, integer flag)
             }
             pos = [];
         }
-    }
+    }    
 }
 
 hud_body_enable(string str)
@@ -188,12 +188,12 @@ hud_body_enable(string str)
     if(idx != -1)
     {
         list pos_list = llParseString2List(llList2String(hud_body_parts_list, idx+1),[","],[""]);
-
+        
         integer link = llList2Integer(pos_list,0);
         integer face = llList2Integer(pos_list,1);
-
+        
         float alpha = llList2Float(info,1);
-
+        
         if(alpha == 1.0)
         {
             llSetLinkColor(link, enable_color, face);
@@ -202,7 +202,7 @@ hud_body_enable(string str)
         {
             llSetLinkColor(link, disable_color, face);
         }
-
+        
         pos_list = [];
     }
     info = [];
@@ -215,41 +215,41 @@ default
         hud_channel = genCh();
         listener = llListen(hud_channel, channel_name, "","");
         body_channel = hud_channel + 1;
-
+        
         restart_start_message();
-
+        
         // 起動時にノートカードを一通り読み込みます。
         config_init();
-
+        
         init_rot = llGetLocalRot();
-
-
+        
+        
     }
-
+    
     changed(integer change)
     {
-        if (change & CHANGED_INVENTORY)
+        if (change & CHANGED_INVENTORY)         
         {
             // インベントリが変更になったらノートカードを読み込みます。
             llResetScript();
             //config_init();
         }
     }
-
+    
     dataserver(key query_id, string data)
     {
         if(query_id == kSettingQuery)
         {
             // ノートカードの 1 行です。
-            if (data == EOF)
+            if (data == EOF) 
             {
                 llOwnerSay("Finished reading [" + notecard_setting_name + "] configuration.");
-            }
+            } 
             else
             {
                 data = strReplace(data, " ", "");
                 data = strReplace(data, "\n", "");
-
+                
                 if(data != "")
                 {
                     if(check_buttons_tag(data) == TRUE)
@@ -262,7 +262,7 @@ default
                     }
                     waiting_message();
                 }
-
+                
                 // カウンタをインクリメントします。
                 ++iSettingLine;
                 //ノートカードの次の行をリクエストします。
@@ -272,11 +272,11 @@ default
         else if(query_id == kPartsQuery)
         {
             // ノートカードの 1 行です。
-            if (data == EOF)
+            if (data == EOF) 
             {
                 llOwnerSay("Finished reading [" + notecard_parts_name + "] configuration.");
-                restart_end_message();
-            }
+                restart_end_message();                
+            } 
             else
             {
                 data = strReplace(data, " ", "");
@@ -286,20 +286,20 @@ default
                     // # なら読み飛ばし
                     jump read_out;
                 }
-
+                
                 if(data != "")
                 {
                     list info = llParseString2List(data, ["="], [""]);
-
+                    
                     hud_body_parts_list += llList2String(info, 0);
                     hud_body_parts_list += llList2String(info, 1);
                     info = [];
-
+                    
                     waiting_message();
                 }
-
+                
                 @read_out;
-
+                
                 // カウンタをインクリメントします。
                 ++iPartsLine;
                 //ノートカードの次の行をリクエストします。
@@ -323,22 +323,22 @@ default
     {
         integer link = llDetectedLinkNumber(0);
         integer face = llDetectedTouchFace(0);
-
+        
         string btn_tag = getButtonTag(link, face);
-
+        
         // for Debug Message
-
+        
         // <CONTROL3DMODEL>
         if(btn_tag == "<CONTROL3DMODEL>")
         {
             if(rot_flag == FALSE)
             {
-                llSetLocalRot(init_rot * llEuler2Rot(<0,PI_BY_TWO*2,0>));
+                llSetLocalRot(init_rot * llEuler2Rot(<0,PI_BY_TWO*2,0>)); 
                 rot_flag = TRUE;
             }
             else
             {
-                llSetLocalRot(init_rot);
+                llSetLocalRot(init_rot); 
                 rot_flag = FALSE;
             }
         }
@@ -346,18 +346,18 @@ default
         {
             if(cntr_flag == FALSE)
             {
-                llSetLocalRot(init_rot * llEuler2Rot(<PI_BY_TWO*2,0,PI_BY_TWO>));
+                llSetLocalRot(init_rot * llEuler2Rot(<PI_BY_TWO*2,0,PI_BY_TWO>)); 
                 cntr_flag = TRUE;
             }
             else
             {
-                llSetLocalRot(init_rot);
+                llSetLocalRot(init_rot); 
                 cntr_flag = FALSE;
             }
         }
         else if(btn_tag == "<CHEST>")
         {
-            // P6,7,8,23,24,25,26,27,28,29,30,31,32,33,34,35
+            // P6,7,8,23,24,25,26,27,28,29,30,31,32,33,34,35 
             string cmd = btn_tag;
             cmd += "{";
             cmd += "P6" + "&";
@@ -377,7 +377,7 @@ default
             cmd += "P34" + "&";
             cmd += "P35";
             cmd += "}";
-
+            
             llSay(body_channel, cmd);
         }
         else if(btn_tag == "<BREAST>")
@@ -396,7 +396,7 @@ default
             cmd += "P33" + "&";
             cmd += "P34";
             cmd += "}";
-
+            
             llSay(body_channel, cmd);
         }
         else if(btn_tag == "<NIPPLE>")
@@ -407,7 +407,7 @@ default
             cmd += "P30" + "&";
             cmd += "P31";
             cmd += "}";
-
+            
             llSay(body_channel, cmd);
         }
         else if(btn_tag == "<WAIST>")
@@ -422,7 +422,7 @@ default
             cmd += "P76" + "&";
             cmd += "P77";
             cmd += "}";
-
+            
             llSay(body_channel, cmd);
         }
         else if(btn_tag == "<ARM>")
@@ -441,7 +441,7 @@ default
             cmd += "P19" + "&";
             cmd += "P20";
             cmd += "}";
-
+            
             llSay(body_channel, cmd);
         }
         else if(btn_tag == "<UPPERLEG>")
@@ -460,7 +460,7 @@ default
             cmd += "P47" + "&";
             cmd += "P48";
             cmd += "}";
-
+            
             llSay(body_channel, cmd);
         }
         else if(btn_tag == "<BOTTOMLEG>")
@@ -485,7 +485,7 @@ default
             cmd += "P63" + "&";
             cmd += "P64";
             cmd += "}";
-
+            
             llSay(body_channel, cmd);
         }
         else if(btn_tag == "<BACK>")
@@ -500,7 +500,7 @@ default
             cmd += "P75" + "&";
             cmd += "P76";
             cmd += "}";
-
+            
             llSay(body_channel, cmd);
         }
         else if(btn_tag == "<HIP>")
@@ -509,9 +509,9 @@ default
             string cmd = btn_tag;
             cmd += "{";
             cmd += "P38" + "&";
-            cmd += "P77";
+            cmd += "P77";            
             cmd += "}";
-
+            
             llSay(body_channel, cmd);
         }
         else if(btn_tag == "<HAND>")
@@ -522,16 +522,20 @@ default
             cmd += "P21" + "&";
             cmd += "P22" + "&";
             cmd += "P78" + "&";
-            cmd += "P79";
+            cmd += "P79";            
             cmd += "}";
-
+            
             llSay(body_channel, cmd);
         }
         else if(btn_tag == "<FOOT>")
         {
-            // P65,66,67,68,80,81
+            // P61,62,63,64,65,66,67,68,80,81
             string cmd = btn_tag;
             cmd += "{";
+            cmd += "P61" + "&";
+            cmd += "P62" + "&";
+            cmd += "P63" + "&";
+            cmd += "P64" + "&";
             cmd += "P65" + "&";
             cmd += "P66" + "&";
             cmd += "P67" + "&";
@@ -539,7 +543,7 @@ default
             cmd += "P80" + "&";
             cmd += "P81";
             cmd += "}";
-
+            
             llSay(body_channel, cmd);
         }
         else if(btn_tag == "<HANDNAIL>")
@@ -550,7 +554,7 @@ default
             cmd += "P78" + "&";
             cmd += "P79";
             cmd += "}";
-
+            
             llSay(body_channel, cmd);
         }
         else if(btn_tag == "<FOOTNAIL>")
@@ -561,7 +565,7 @@ default
             cmd += "P80" + "&";
             cmd += "P81";
             cmd += "}";
-
+            
             llSay(body_channel, cmd);
         }
         else if(btn_tag == "<ALL>")
@@ -579,10 +583,10 @@ default
                 }
             }
             cmd += "}";
-
+            
             llSay(body_channel, cmd);
         }
-
+        
         // HUD Mesh Body Touch
         else
         {
@@ -592,13 +596,13 @@ default
                 llSay(body_channel, parts_str);
             }
         }
-
+        
         //llOwnerSay((string)((float)llGetFreeMemory()/1000.0) + " KB free");
     }
-
+    
     listen(integer ch, string name, key id, string message)
     {
-        if(ch == hud_channel && name == channel_name)
+        if(ch == hud_channel && llSubStringIndex(name,"[BMS]") != -1)
         {
             // Mesh Body からのメッセージなら
             if(llSubStringIndex(message,":") != -1)
@@ -606,11 +610,11 @@ default
                 list info_list = llParseString2List(message, ["{",":"], [""]);
                 list parts_list = llParseString2List(strReplace(llList2String(info_list,1),"}",""),["&"],[""]);
                 integer flag = llList2Integer(info_list,2);
-
+    
                 hud_body_enable_fromlist(parts_list, flag);
-
+                
                 info_list = [];
-                parts_list = [];
+                parts_list = [];                
             }
             else if(llSubStringIndex(message,"$") != -1)
             {
