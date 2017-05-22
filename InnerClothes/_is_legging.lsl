@@ -1,4 +1,4 @@
-integer ch_randaddval = 1;
+﻿integer ch_randaddval = 1;
 integer listener = 0;
 integer hud_channel = 0;
 integer body_channel = 0;
@@ -45,7 +45,7 @@ waiting_message()
 
 // ノートカード読み込み処理
 config_init()
-{
+{ 
     /*----------------------*/
     /* CLOTH_PARTS 読み込み */
     key nc_key_2 = llGetInventoryKey(notecard_parts_name);
@@ -66,13 +66,13 @@ cloth_enable_fromlist(list parts_list, integer flag)
     {
         string parts = llList2String(parts_list, i);
         integer idx = llListFindList(cloth_parts_list, [parts]);
-
+        
         if(idx != -1)
-        {
+        {    
             list pos = llParseString2List(llList2String(cloth_parts_list,idx+1), [","],[""]);
             integer link = llList2Integer(pos,0);
             integer face = llList2Integer(pos,1);
-
+            
             if(link != -1)
             {
                 if(flag == TRUE)
@@ -86,7 +86,7 @@ cloth_enable_fromlist(list parts_list, integer flag)
             }
             pos = [];
         }
-    }
+    }    
 }
 
 cloth_enable(string str)
@@ -97,24 +97,24 @@ cloth_enable(string str)
     if(idx != -1)
     {
         //list parts_list = llParseString2List(llList2String(cloth_parts_list, idx+1),["&"],[""]);
-
+        
         //integer i;
         //for(i = 0 ; i < llGetListLength(parts_list) ; i++)
         //{
             //list pos_list = llParseString2List(llList2String(parts_list, i),[","],[""]);
-
+            
             list pos_list = llParseString2List(llList2String(cloth_parts_list, idx+1),[","],[""]);
-
+            
             integer link = llList2Integer(pos_list,0);
             integer face = llList2Integer(pos_list,1);
-
+            
             float alpha = llList2Float(info,1);
-
+            
             llSetLinkAlpha(link, alpha, face);
-
+            
             pos_list = [];
         //}
-
+        
         //parts_list = [];
     }
     info = [];
@@ -127,16 +127,16 @@ default
         hud_channel = genCh();
         listener = llListen(hud_channel, channel_name, "","");
         body_channel = hud_channel + 1;
-
+        
         restart_start_message();
-
+        
         // 起動時にノートカードを一通り読み込みます。
         config_init();
     }
-
+    
     changed(integer change)
     {
-        if (change & CHANGED_INVENTORY)
+        if (change & CHANGED_INVENTORY)         
         {
             // インベントリが変更になったらノートカードを読み込みます。
             llResetScript();
@@ -149,11 +149,11 @@ default
         if(query_id == kPartsQuery)
         {
             // ノートカードの 1 行です。
-            if (data == EOF)
+            if (data == EOF) 
             {
                 llOwnerSay("Finished reading [" + notecard_parts_name + "] configuration.");
-                restart_end_message();
-            }
+                restart_end_message();                
+            } 
             else
             {
                 data = strReplace(data, " ", "");
@@ -163,21 +163,21 @@ default
                     // # なら読み飛ばし
                     jump read_out;
                 }
-
+                
                 if(data != "")
                 {
                     list info = llParseString2List(data, ["="], [""]);
-
+                    
                     cloth_parts_list += llList2String(info, 0);
                     cloth_parts_list += llList2String(info, 1);
-
+                    
                     info = [];
-
+                    
                     waiting_message();
                 }
-
+                
                 @read_out;
-
+                
                 // カウンタをインクリメントします。
                 ++iPartsLine;
                 //ノートカードの次の行をリクエストします。
@@ -185,7 +185,7 @@ default
             }
         }
     }
-
+    
     attach(key id)
     {
         if(listener != 0)
@@ -196,7 +196,7 @@ default
             listener = llListen(hud_channel, channel_name, "","");
         }
     }
-
+    
     listen(integer ch, string name, key id, string message)
     {
         if(ch == hud_channel && name == channel_name)
@@ -207,11 +207,11 @@ default
                 list info_list = llParseString2List(message, ["{",":"], [""]);
                 list parts_list = llParseString2List(strReplace(llList2String(info_list,1),"}",""),["&"],[""]);
                 integer flag = llList2Integer(info_list,2);
-
+    
                 cloth_enable_fromlist(parts_list, flag);
-
+                
                 info_list = [];
-                parts_list = [];
+                parts_list = [];                
             }
             else if(llSubStringIndex(message,"$") != -1)
             {
