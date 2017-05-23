@@ -1,12 +1,13 @@
-﻿// [BMS] Mesh Body Script
+// [BMS] Mesh Body Script
 // Writtten by いっちゃん (ishikawasou)
 //
 // Version 0.9.0  ---   2017.05.21 (Beta)
 
-integer ch_randaddval = 2;
+integer ch_randaddval = 2; // BODY
 integer listener;
 integer body_channel;
 integer hud_channel;
+integer head_channel;
 string channel_name = "";//"[BMS] Body_HUD_Control Panel_16";
 
 float gAlpha = 0.0;
@@ -27,6 +28,7 @@ integer footnail_flag = TRUE;
 integer all_flag = TRUE;
 
 integer extention_foot_flag = FALSE;
+integer bms_head_flag = FALSE;
 
 key kPartsQuery;
 integer iPartsLine = 0;
@@ -375,6 +377,18 @@ integer do_btn_func(string btn, list parts_list)
     return ret;
 }
 
+set_bms_head()
+{
+    if(bms_head_flag == TRUE)
+    {
+        do_parts_change_alpha("P1", TRUE);
+    }
+    else
+    {
+        do_parts_change_alpha("P1", FALSE);
+    }
+}
+
 restart_start_message()
 {
     llOwnerSay((string)((float)llGetFreeMemory()/1000.0) + " KB free");
@@ -411,6 +425,7 @@ default
     {
         body_channel = genCh();
         hud_channel = body_channel - 1;
+        head_channel = body_channel + 1;
         listener = llListen(body_channel,channel_name,"","");
         
         restart_start_message();
@@ -474,9 +489,13 @@ default
             llListenRemove(listener);
             body_channel = genCh();
             hud_channel = body_channel - 1;
+            head_channel = body_channel + 1;
             listener = llListen(body_channel, channel_name, "","");
             
             extention_foot_flag = FALSE;
+            
+            // [BMS] Head が装着されているか確認
+            llSay(head_channel, "<BMS_HEAD_CHECK>");
         }
     }
 
@@ -484,9 +503,21 @@ default
     {
         if(ch == body_channel && llSubStringIndex(name,"[BMS]") != -1)
         {
-            
+            if(message == "<BMS_HEAD_ADD>" || message == "<BMS_HEAD_REMOVE>")
+            {
+                // [BMS] Head 対応処理を行う
+                if(message == "<BMS_HEAD_ADD>")
+                {
+                    bms_head_flag = TRUE;
+                }
+                else
+                {
+                    bms_head_flag = FALSE;
+                }
+                set_bms_head();
+            }
             // HUD からのメッセージなら
-            if(llSubStringIndex(message,"&") == -1)
+            else if(llSubStringIndex(message,"&") == -1)
             {
                 if(do_parts_change_alpha(message, FALSE) == TRUE)
                 {

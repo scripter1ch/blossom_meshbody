@@ -1,4 +1,4 @@
-﻿// [BMS] Mesh Body Hud Script
+// [BMS] Mesh Body Hud Script
 // Writtten by いっちゃん (ishikawasou)
 //
 // Version 0.9.0  ---   2017.05.21 (Beta)
@@ -11,7 +11,10 @@ integer ch_randaddval = 1;
 integer listener = 0;
 integer hud_channel = 0;
 integer body_channel = 0;
+integer head_channel = 0;
 string channel_name = "";//"[BMS] BMSG_Body_take16";
+
+integer bms_head_flag = FALSE;
 
 integer rot_flag = FALSE;
 integer cntr_flag = FALSE;
@@ -44,6 +47,33 @@ integer genCh()
     gen = -1-(integer)("0x"+str_1)-(integer)("0x"+str_2) + ch_randaddval;
 
     return gen;
+}
+
+set_bms_head()
+{
+    integer link;
+    integer face;
+    integer idx = llListFindList(hud_body_parts_list, ["P1"]);
+    if(idx != -1)
+    {
+        list pos = llParseString2List(llList2String(hud_body_parts_list,idx+1), [","],[""]);
+        integer link = llList2Integer(pos,0);
+        integer face = llList2Integer(pos,1);
+
+        if(bms_head_flag == TRUE)
+        {
+            // P1 を非活性
+            llSetLinkAlpha(link, 0.0, face);
+        }
+        else
+        {
+            // P1 を活性
+            llSetLinkAlpha(link, 1.0, face);
+            llSetLinkColor(link, enable_color, face);
+        }
+        
+        pos = [];
+    }
 }
 
 restart_start_message()
@@ -115,6 +145,10 @@ string check_hudbody(integer link, integer face)
     if(idx != -1)
     {
         ret_str = llList2String(hud_body_parts_list, idx-1);
+        if(bms_head_flag == TRUE)
+        {
+            ret_str = "";
+        }
     }
     
     return ret_str;
@@ -215,6 +249,7 @@ default
         hud_channel = genCh();
         listener = llListen(hud_channel, channel_name, "","");
         body_channel = hud_channel + 1;
+        head_channel = hud_channel + 2;
         
         restart_start_message();
         
@@ -315,7 +350,11 @@ default
             llListenRemove(listener);
             hud_channel = genCh();
             body_channel = hud_channel + 1;
+            head_channel = hud_channel + 2;
             listener = llListen(hud_channel, channel_name, "","");
+            
+            // [BMS] Head が装着されているか確認
+            llSay(head_channel, "<BMS_HEAD_CHECK>");
         }
     }
 
@@ -574,7 +613,15 @@ default
             string cmd = btn_tag;
             cmd += "{";
             integer i;
-            for(i = 0 ; i < llGetListLength(hud_body_parts_list); i+=2)
+            if(bms_head_flag == TRUE)
+            {
+                i = 2;
+            }
+            else
+            {
+                i = 0;
+            }
+            for( ; i < llGetListLength(hud_body_parts_list); i+=2)
             {
                 cmd += llList2String(hud_body_parts_list,i);
                 if(i < llGetListLength(hud_body_parts_list)-2)
@@ -604,8 +651,21 @@ default
     {
         if(ch == hud_channel && llSubStringIndex(name,"[BMS]") != -1)
         {
+            if(message == "<BMS_HEAD_ADD>" || message == "<BMS_HEAD_REMOVE>")
+            {
+                // [BMS] Head 対応処理を行う
+                if(message == "<BMS_HEAD_ADD>")
+                {
+                    bms_head_flag = TRUE;
+                }
+                else
+                {
+                    bms_head_flag = FALSE;
+                }
+                set_bms_head();
+            }
             // Mesh Body からのメッセージなら
-            if(llSubStringIndex(message,":") != -1)
+            else if(llSubStringIndex(message,":") != -1)
             {
                 list info_list = llParseString2List(message, ["{",":"], [""]);
                 list parts_list = llParseString2List(strReplace(llList2String(info_list,1),"}",""),["&"],[""]);
