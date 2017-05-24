@@ -145,7 +145,7 @@ string check_hudbody(integer link, integer face)
     if(idx != -1)
     {
         ret_str = llList2String(hud_body_parts_list, idx-1);
-        if(bms_head_flag == TRUE)
+        if(bms_head_flag == TRUE && ret_str == "P1")
         {
             ret_str = "";
         }
